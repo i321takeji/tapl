@@ -14,22 +14,22 @@ isval t | isnumericval t = True
 isval _                  = False
 
 eval1 :: Term -> Maybe Term
-eval1 (TmIf _ (TmTrue _) t2 t3)   = Just t2
-eval1 (TmIf _ (TmFalse _) t2 t3)  = Just t3
-eval1 (TmIf fi t1 t2 t3)          = let (Just t1') = eval1 t1
-                                    in Just $ TmIf fi t1' t2 t3
-eval1 (TmSucc fi t1)              = let (Just t1') = eval1 t1
-                                    in Just $ TmSucc fi t1'
-eval1 (TmPred _ (TmZero _))       = Just $ TmZero dummyinfo
+eval1 (TmIf _ (TmTrue _) t2 t3)   = return t2
+eval1 (TmIf _ (TmFalse _) t2 t3)  = return t3
+eval1 (TmIf fi t1 t2 t3)          = do t1' <- eval1 t1
+                                       return $ TmIf fi t1' t2 t3
+eval1 (TmSucc fi t1)              = do t1' <- eval1 t1
+                                       return $ TmSucc fi t1'
+eval1 (TmPred _ (TmZero _))       = return $ TmZero dummyinfo
 eval1 (TmPred _ (TmSucc _ nv1))
-    | isnumericval nv1            = Just nv1
-eval1 (TmPred fi t1)              = let (Just t1') = eval1 t1
-                                    in Just $ TmPred fi t1'
-eval1 (TmIsZero _ (TmZero _))     = Just $ TmTrue dummyinfo
+    | isnumericval nv1            = return nv1
+eval1 (TmPred fi t1)              = do t1' <- eval1 t1
+                                       return $ TmPred fi t1'
+eval1 (TmIsZero _ (TmZero _))     = return $ TmTrue dummyinfo
 eval1 (TmIsZero _ (TmSucc _ nv1))
-    | isnumericval nv1            = Just $ TmFalse dummyinfo
-eval1 (TmIsZero fi t1)            = let (Just t1') = eval1 t1
-                                    in Just $ TmIsZero fi t1'
+    | isnumericval nv1            = return $ TmFalse dummyinfo
+eval1 (TmIsZero fi t1)            = do t1' <- eval1 t1
+                                       return $ TmIsZero fi t1'
 eval1 _                           = Nothing
 
 eval :: Term -> Term
