@@ -12,5 +12,17 @@ data Term = TmTrue Info
           | TmIsZero Info Term
             deriving (Show)
 
+tT :: Term
+tT = TmTrue dummyinfo
+
+tF :: Term
+tF = TmFalse dummyinfo
+
+tZ :: Term
+tZ = TmZero dummyinfo
+
 t1 :: Term
 t1 = TmPred dummyinfo (TmSucc dummyinfo (TmPred dummyinfo (TmZero dummyinfo)))
+
+t2 :: Term
+t2 = TmIf dummyinfo tZ tT tF
