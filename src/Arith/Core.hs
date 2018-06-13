@@ -1,4 +1,4 @@
-module Core where
+module Arith.Core where
 
 import Arith.Syntax
 

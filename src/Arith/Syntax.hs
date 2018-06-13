@@ -10,7 +10,7 @@ data Term = TmTrue Info
           | TmSucc Info Term
           | TmPred Info Term
           | TmIsZero Info Term
-            deriving (Show)
+            deriving (Eq, Show)
 
 tT :: Term
 tT = TmTrue dummyinfo
