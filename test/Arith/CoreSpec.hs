@@ -32,4 +32,7 @@ sizedTerm n | n > 0 = oneof [ liftM TmTrue arbitrary
             where
               subterm = sizedTerm (n `div` 2)
 
-prop_3_5_17 t = isval (eval t) ==> eval t == evalBig t
+prop_3_5_17 t = isval vs && isval vb ==> vs == vb
+    where
+      vs = eval t
+      vb = evalBig t
