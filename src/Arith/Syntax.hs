@@ -1,28 +1,28 @@
 module Arith.Syntax where
 
-type Info = (Int, Int)
-dummyinfo = (-1, -1)
+--type Info = (Int, Int)
+--dummyinfo = (-1, -1)
 
-data Term = TmTrue Info
-          | TmFalse Info
-          | TmIf Info Term Term Term
-          | TmZero Info
-          | TmSucc Info Term
-          | TmPred Info Term
-          | TmIsZero Info Term
+data Term = TmTrue
+          | TmFalse
+          | TmIf Term Term Term
+          | TmZero
+          | TmSucc Term
+          | TmPred Term
+          | TmIsZero Term
             deriving (Eq, Show)
 
 tT :: Term
-tT = TmTrue dummyinfo
+tT = TmTrue
 
 tF :: Term
-tF = TmFalse dummyinfo
+tF = TmFalse
 
 tZ :: Term
-tZ = TmZero dummyinfo
+tZ = TmZero
 
 t1 :: Term
-t1 = TmPred dummyinfo (TmSucc dummyinfo (TmPred dummyinfo (TmZero dummyinfo)))
+t1 = TmPred (TmSucc (TmPred TmZero))
 
 t2 :: Term
-t2 = TmIf dummyinfo tZ tT tF
+t2 = TmIf tZ tT tF

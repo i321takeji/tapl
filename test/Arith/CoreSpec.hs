@@ -17,17 +17,17 @@ spec = do
 instance Arbitrary Term where
     arbitrary = sized sizedTerm
 
-sizedTerm 0         = oneof [ liftM TmTrue arbitrary
-                            , liftM TmFalse arbitrary
-                            , liftM TmZero arbitrary
+sizedTerm 0         = oneof [ return TmTrue
+                            , return TmFalse
+                            , return TmZero
                             ]
-sizedTerm n | n > 0 = oneof [ liftM TmTrue arbitrary
-                            , liftM TmFalse arbitrary
-                            , liftM4 TmIf arbitrary subterm subterm subterm
-                            , liftM TmZero arbitrary
-                            , liftM2 TmSucc arbitrary subterm
-                            , liftM2 TmPred arbitrary subterm
-                            , liftM2 TmIsZero arbitrary subterm
+sizedTerm n | n > 0 = oneof [ return TmTrue
+                            , return TmFalse
+                            , liftM3 TmIf subterm subterm subterm
+                            , return TmZero
+                            , liftM TmSucc subterm
+                            , liftM TmPred subterm
+                            , liftM TmIsZero subterm
                             ]
             where
               subterm = sizedTerm (n `div` 2)
