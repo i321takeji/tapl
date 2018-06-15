@@ -21,14 +21,14 @@ sizedTerm 0         = oneof [ return TmTrue
                             , return TmFalse
                             , return TmZero
                             ]
-sizedTerm n | n > 0 = oneof [ return TmTrue
-                            , return TmFalse
-                            , liftM3 TmIf subterm subterm subterm
-                            , return TmZero
-                            , liftM TmSucc subterm
-                            , liftM TmPred subterm
-                            , liftM TmIsZero subterm
-                            ]
+sizedTerm n | n > 0 = frequency [ (1, return TmTrue)
+                                , (1, return TmFalse)
+                                , (4, liftM3 TmIf subterm subterm subterm)
+                                , (1, return TmZero)
+                                , (2, liftM TmSucc subterm)
+                                , (2, liftM TmPred subterm)
+                                , (2, liftM TmIsZero subterm)
+                                ]
             where
               subterm = sizedTerm (n `div` 2)
 
