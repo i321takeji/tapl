@@ -32,6 +32,7 @@ sizedTerm n | n > 0 = frequency [ (1, return TmTrue)
             where
               subterm = sizedTerm (n `div` 2)
 
+-- | exercise 3.5.17: t ->* v <=> t ↓↓ v
 prop_ex3_5_17 t = isval vs && isval vb ==> vs == vb
     where
       vs = eval t
