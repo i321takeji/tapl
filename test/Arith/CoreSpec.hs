@@ -37,3 +37,18 @@ prop_ex3_5_17 t = isval vs && isval vb ==> vs == vb
     where
       vs = eval t
       vb = evalBig t
+
+sizedTerm' 0         = oneof [ pure TmTrue
+                             , pure TmFalse
+                             , pure TmZero
+                             ]
+sizedTerm' n | n > 0 = frequency [ (1, pure TmTrue)
+                                 , (1, pure TmFalse)
+                                 , (4, TmIf <$> subterm <*> subterm <*> subterm)
+                                 , (1, pure TmZero)
+                                 , (2, TmSucc <$> subterm)
+                                 , (2, TmPred <$> subterm)
+                                 , (2, TmIsZero <$> subterm)
+                                 ]
+            where
+              subterm = sizedTerm' (n `div` 2)
