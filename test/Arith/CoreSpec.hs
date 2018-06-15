@@ -12,7 +12,7 @@ import Test.QuickCheck
 spec :: Spec
 spec = do
   describe "small-step == big-step" $ do
-         prop "small-step == big-step" prop_3_5_17
+         prop "small-step == big-step" prop_ex3_5_17
 
 instance Arbitrary Term where
     arbitrary = sized sizedTerm
@@ -32,7 +32,7 @@ sizedTerm n | n > 0 = frequency [ (1, return TmTrue)
             where
               subterm = sizedTerm (n `div` 2)
 
-prop_3_5_17 t = isval vs && isval vb ==> vs == vb
+prop_ex3_5_17 t = isval vs && isval vb ==> vs == vb
     where
       vs = eval t
       vb = evalBig t
