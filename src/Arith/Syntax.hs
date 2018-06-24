@@ -1,4 +1,6 @@
-module Arith.Syntax where
+module Arith.Syntax
+    (Term (..))
+where
 
 --type Info = (Int, Int)
 --dummyinfo = (-1, -1)
