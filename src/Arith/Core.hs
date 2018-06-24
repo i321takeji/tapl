@@ -57,32 +57,28 @@ eval1' (TmIsZero t1)               = TmIsZero <$> eval1' t1
 eval1' _                           = Nothing
 
 
--- big-step evaluation
+-- | big-step evaluation
 type Value = Term
 
 evalBig' :: Term -> Maybe Value
-evalBig' t | isval t     = return t
-evalBig' (TmIf t1 t2 t3) = do v1 <- evalBig' t1
-                              case v1 of
-                                TmTrue  -> evalBig' t2
-                                TmFalse -> evalBig' t3
-                                _       -> Nothing
-evalBig' (TmSucc t1)     = do nv1 <- evalBig' t1
-                              guard $ isnumericval nv1
-                              return $ TmSucc nv1
-evalBig' (TmPred t1)     = do nv <- evalBig' t1
-                              case nv of
-                                TmZero               -> return TmZero
-                                TmSucc nv1
-                                  | isnumericval nv1 -> return nv1
-                                _                    -> Nothing
-evalBig' (TmIsZero t1)   = do nv <- evalBig' t1
-                              case nv of
-                                TmZero               -> return TmTrue
-                                TmSucc nv1
-                                  | isnumericval nv1 -> return TmFalse
-                                _                    -> Nothing
-evalBig' _               = Nothing
+evalBig' t | isval t                            = return t
+evalBig' (TmIf t1 t2 t3) | v1 == return TmTrue  = evalBig' t2
+                         | v1 == return TmFalse = evalBig' t3
+                         where v1 = evalBig' t1
+evalBig' (TmSucc t1)                            = do nv1 <- evalBig' t1
+                                                     guard $ isnumericval nv1
+                                                     return $ TmSucc nv1
+evalBig' (TmPred t1) | nv == return TmZero      = return TmZero
+                     | otherwise                = do TmSucc nv1 <- nv
+                                                     guard $ isnumericval nv1
+                                                     return nv1
+                     where nv = evalBig' t1
+evalBig' (TmIsZero t1) | nv == return TmZero    = return TmTrue
+                       | otherwise              = do TmSucc nv1 <- nv
+                                                     guard $ isnumericval nv1
+                                                     return TmFalse
+                       where nv = evalBig' t1
+evalBig' _                                      = Nothing
 
 evalBig :: Term -> Term
 evalBig t = case evalBig' t of
