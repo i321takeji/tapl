@@ -48,3 +48,19 @@ index2name ctx x = fst $ ctx !! x
 gamma = zip ["b", "a", "z", "y", "x"] (repeat NameBind)
 t0 = TmVar 4 5
 t1 = TmApp (TmVar 4 5) (TmApp (TmVar 3 5) (TmVar 2 5))
+
+termShift :: Int -> Term -> Term
+termShift d t = walk 0 t
+    where
+      walk c (TmVar k n) | k < c     = TmVar k     (n+d)
+                         | otherwise = TmVar (k+d) (n+d)
+      walk c (TmAbs x t1)            = TmAbs x (walk (c+1) t1)
+      walk c (TmApp t1 t2)           = TmApp (walk c t1) (walk c t2)
+
+termSubst :: Int -> Term -> Term -> Term
+termSubst j s t = walk 0 t
+    where
+      walk c k'@(TmVar k n) | k == j+c  = termShift c s
+                            | otherwise = k'
+      walk c    (TmAbs x t1)            = TmAbs x (walk (c+1) t1)
+      walk c    (TmApp t1 t2)           = TmApp (walk c t1) (walk c t2)
