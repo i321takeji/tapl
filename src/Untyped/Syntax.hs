@@ -1,9 +1,9 @@
 module Untyped.Syntax
-    ()
+    (Term (..), Binding (..), showTm, termShift)
 where
 
-data Term = TmVar Int Int
-          | TmAbs Name Term
+data Term = TmVar Int Int    -- ^ 自由変数と文脈の長さ
+          | TmAbs Name Term  -- ^ 第 1 引数は，元の束縛変数名（のヒント）
           | TmApp Term Term
             deriving (Eq, Show)
 
@@ -13,7 +13,7 @@ data Binding = NameBind
                deriving (Show)
 
 showTm :: Context -> Term -> String
-showTm ctx (TmAbs x t1)  = "(\\ " ++ x' ++ ". " ++ showTm ctx' t1 ++ ")"
+showTm ctx (TmAbs x t1)  = "(\\" ++ x' ++ ". " ++ showTm ctx' t1 ++ ")"
     where (ctx', x') = pickFreshName ctx x
 showTm ctx (TmApp t1 t2) = "(" ++ showTm ctx t1 ++ " " ++ showTm ctx t2 ++ ")"
 showTm ctx (TmVar x n)   = if length ctx == n then index2name ctx x
@@ -43,11 +43,6 @@ pickFreshName ctx x | isNameBound ctx x = pickFreshName ctx (x ++ "'")
 
 index2name :: Context -> Int -> Name
 index2name ctx x = fst $ ctx !! x
-
---gamma = zip ["x", "y", "z", "a", "b"] (repeat NameBind)
-gamma = zip ["b", "a", "z", "y", "x"] (repeat NameBind)
-t0 = TmVar 4 5
-t1 = TmApp (TmVar 4 5) (TmApp (TmVar 3 5) (TmVar 2 5))
 
 termShift :: Int -> Term -> Term
 termShift d t = walk 0 t
