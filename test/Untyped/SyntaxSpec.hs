@@ -2,7 +2,31 @@ module Untyped.SyntaxSpec where
 
 import Untyped.Syntax
 
+import Control.Monad
+
 import Test.Hspec
+import Test.Hspec.QuickCheck (prop)
+import Test.QuickCheck
+
+instance Arbitrary Term where
+    arbitrary = sized sizedTerm
+
+sizedTerm 0         = TmVar <$> genNat <*> genNat
+sizedTerm n | n > 0 = frequency [ (1, TmVar <$> genNat <*> genNat)
+                                , (2, TmAbs <$> genName <*> sizedTerm (n-1))
+                                , (4, do a <- choose (0, n-1)
+                                         TmApp <$> sizedTerm a <*> sizedTerm (n-1-a))
+                                ]
+            where
+              genName = do v <- choose ('a', 'z')
+                           return [v]
+
+--            genName = do h <- elements ['a'..'z']
+--                         t <- listOf (elements (['a'..'z'] ++ ['A'..'Z']))
+--                         return (h:t)
+
+genNat = choose (0, 20 :: Int)
+
 
 spec :: Spec
 spec = do
