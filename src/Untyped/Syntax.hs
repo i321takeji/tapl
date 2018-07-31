@@ -1,5 +1,5 @@
 module Untyped.Syntax
-    (Term (..), Binding (..), showTm, termShift, termSubst)
+    (Term (..), Context, Binding (..), showTm, termShift, termSubst, termSubstTop)
 where
 
 data Term = TmVar Int Int    -- ^ 自由変数と文脈の長さ
@@ -59,3 +59,6 @@ termSubst j s t = walk 0 t
                             | otherwise = k'
       walk c    (TmAbs x t1)            = TmAbs x (walk (c+1) t1)
       walk c    (TmApp t1 t2)           = TmApp (walk c t1) (walk c t2)
+
+termSubstTop :: Term -> Term -> Term
+termSubstTop s t = termShift (-1) (termSubst 0 (termShift 1 s) t)
