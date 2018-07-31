@@ -1,5 +1,5 @@
 module Untyped.Syntax
-    (Term (..), Binding (..), showTm, termShift)
+    (Term (..), Binding (..), showTm, termShift, termSubst)
 where
 
 data Term = TmVar Int Int    -- ^ 自由変数と文脈の長さ
