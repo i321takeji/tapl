@@ -9,7 +9,7 @@ spec :: Spec
 spec = do
   describe "small-step evaluation" $ do
          it "'(\\. 1 0 2) (\\. 0)' should be '0 (\\. 0) 1'" $ do
-                eval p88_gamma p88_ex01 `shouldBe` TmApp (TmApp (TmVar 0 0) (TmAbs "y" (TmVar 0 1))) (TmVar 1 0)
+                eval p88_gamma p88_ex01 `shouldBe` NTmApp (NTmApp (NTmVar 0 0) (NTmAbs "y" (NTmVar 0 1))) (NTmVar 1 0)
 
 p88_gamma = []
-p88_ex01 = TmApp (TmAbs "x" (TmApp (TmApp (TmVar 1 1) (TmVar 0 1)) (TmVar 2 1))) (TmAbs "y" (TmVar 0 1))
+p88_ex01 = NTmApp (NTmAbs "x" (NTmApp (NTmApp (NTmVar 1 1) (NTmVar 0 1)) (NTmVar 2 1))) (NTmAbs "y" (NTmVar 0 1))

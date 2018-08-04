@@ -1,10 +1,10 @@
 module Untyped.Syntax
-    (Term (..), Context, Binding (..), showTm, termShift, termSubst, termSubstTop)
+    (NamelessTerm (..), Context, Binding (..), showNTm, termShift, termSubst, termSubstTop)
 where
 
-data Term = TmVar Int Int    -- ^ 自由変数と文脈の長さ
-          | TmAbs Name Term  -- ^ 第 1 引数は，元の束縛変数名（のヒント）
-          | TmApp Term Term
+data NamelessTerm = NTmVar Int Int                    -- ^ 自由変数と文脈の長さ
+                  | NTmAbs Name NamelessTerm          -- ^ 第 1 引数は，元の束縛変数名（のヒント）
+                  | NTmApp NamelessTerm NamelessTerm
             deriving (Eq, Show)
 
 type Context = [(Name, Binding)]
@@ -12,27 +12,15 @@ type Name    = String
 data Binding = NameBind
                deriving (Show)
 
-showTm :: Context -> Term -> String
-showTm ctx (TmAbs x t1)  = "(\\" ++ x' ++ ". " ++ showTm ctx' t1 ++ ")"
+showNTm :: Context -> NamelessTerm -> String
+showNTm ctx (NTmAbs x t1)  = "(\\" ++ x' ++ ". " ++ showNTm ctx' t1 ++ ")"
     where (ctx', x') = pickFreshName ctx x
-showTm ctx (TmApp t1 t2) = "(" ++ showTm ctx t1 ++ " " ++ showTm ctx t2 ++ ")"
-showTm ctx (TmVar x n)   = if length ctx == n then index2name ctx x
+showNTm ctx (NTmApp t1 t2) = "(" ++ showNTm ctx t1 ++ " " ++ showNTm ctx t2 ++ ")"
+showNTm ctx (NTmVar x n)   = if length ctx == n then index2name ctx x
                            else error "[bad index]"
 
-printTm :: Context -> Term -> IO ()
-printTm ctx (TmAbs x t1)  = do let (ctx', x') = pickFreshName ctx x
-                               putStr "(lambda "
-                               putStr x'
-                               putStr ". "
-                               printTm ctx' t1
-                               putStr ")"
-printTm ctx (TmApp t1 t2) = do putStr "("
-                               printTm ctx t1
-                               putStr " "
-                               printTm ctx t2
-                               putStr ")"
-printTm ctx (TmVar x n)   = if length ctx == n then putStr (index2name ctx x)
-                            else print "[bad index]"
+printNTm :: Context -> NamelessTerm -> IO ()
+printNTm ctx t = putStrLn $ showNTm ctx t
 
 isNameBound :: Context -> Name -> Bool
 isNameBound ctx x = x `elem` fst (unzip ctx)
@@ -44,21 +32,21 @@ pickFreshName ctx x | isNameBound ctx x = pickFreshName ctx (x ++ "'")
 index2name :: Context -> Int -> Name
 index2name ctx x = fst $ ctx !! x
 
-termShift :: Int -> Term -> Term
+termShift :: Int -> NamelessTerm -> NamelessTerm
 termShift d t = walk 0 t
     where
-      walk c (TmVar k n) | k < c     = TmVar k     (n+d)
-                         | otherwise = TmVar (k+d) (n+d)
-      walk c (TmAbs x t1)            = TmAbs x (walk (c+1) t1)
-      walk c (TmApp t1 t2)           = TmApp (walk c t1) (walk c t2)
+      walk c (NTmVar k n) | k < c     = NTmVar k     (n+d)
+                          | otherwise = NTmVar (k+d) (n+d)
+      walk c (NTmAbs x t1)            = NTmAbs x (walk (c+1) t1)
+      walk c (NTmApp t1 t2)           = NTmApp (walk c t1) (walk c t2)
 
-termSubst :: Int -> Term -> Term -> Term
+termSubst :: Int -> NamelessTerm -> NamelessTerm -> NamelessTerm
 termSubst j s t = walk 0 t
     where
-      walk c k'@(TmVar k n) | k == j+c  = termShift c s
-                            | otherwise = k'
-      walk c    (TmAbs x t1)            = TmAbs x (walk (c+1) t1)
-      walk c    (TmApp t1 t2)           = TmApp (walk c t1) (walk c t2)
+      walk c k'@(NTmVar k n) | k == j+c  = termShift c s
+                             | otherwise = k'
+      walk c    (NTmAbs x t1)            = NTmAbs x (walk (c+1) t1)
+      walk c    (NTmApp t1 t2)           = NTmApp (walk c t1) (walk c t2)
 
-termSubstTop :: Term -> Term -> Term
+termSubstTop :: NamelessTerm -> NamelessTerm -> NamelessTerm
 termSubstTop s t = termShift (-1) (termSubst 0 (termShift 1 s) t)
