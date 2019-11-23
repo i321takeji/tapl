@@ -122,9 +122,9 @@ doRecon = result . recon [] (uvargen 1)
 
 expr = TmAbs "x" (TyId "X")
          (TmAbs "y" (TyId "Y")
-            (TmAbs "z" (TyId "Z") (TmVar 2 999)))
+            (TmAbs "z" (TyId "Z") (TmVar 2 3)))
 
 exer22_2_3 = TmAbs "x" (TyId "X")
                (TmAbs "y" (TyId "Y")
                  (TmAbs "z" (TyId "Z")
-                   (TmApp (TmApp (TmVar 2 999) (TmVar 0 999)) (TmApp (TmVar 1 999) (TmVar 0 999)))))
+                   (TmApp (TmApp (TmVar 2 3) (TmVar 0 3)) (TmApp (TmVar 1 3) (TmVar 0 3)))))
