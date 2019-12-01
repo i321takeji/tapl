@@ -78,6 +78,7 @@ typeof ctx (TmApp t1 t2)     = case tyT1 of
 
 -- Exercise 22.3.10
 type Constr = [(Ty, Ty)]
+type SubstType = [(Ty, Ty)]
 data NextUVar = NextUVar String (() -> NextUVar)
 
 uvargen :: Int -> NextUVar
@@ -120,10 +121,52 @@ doRecon = result . recon [] (uvargen 1)
   where
     result (tyT, _, c) = (tyT, c)
 
+inTyVar :: Name -> Ty -> Bool
+inTyVar _ TyNat = False
+inTyVar _ TyBool = False
+inTyVar tyX (TyArr tyT1 tyT2) = tyX `inTyVar` tyT1 || tyX `inTyVar` tyT2
+inTyVar tyX (TyId tyX1) = tyX == tyX1
+
+substTypes :: Name -> Ty -> Constr -> Constr
+substTypes tyX tyT cs = map (\(ty1, ty2) -> (substtype ty1, substtype ty2)) cs
+  where
+    substtype = substType tyX tyT
+
+substType :: Name -> Ty -> Ty -> Ty
+substType _ _ TyNat = TyNat
+substType _ _ TyBool = TyBool
+substType tyX tyT (TyArr tyS1 tyS2) = TyArr (substType tyX tyT tyS1) (substType tyX tyT tyS2)
+substType tyX tyT tyS@(TyId tyY) = if tyX == tyY then tyT
+                                   else tyS
+
+unify :: Constr -> SubstType
+unify [] = []
+unify ((TyNat, TyNat):cs)   = unify cs
+unify ((TyBool, TyBool):cs) = unify cs
+unify ((tyS@(TyId tyX), tyT):cs)
+  | tyS == tyT        = unify cs
+  | tyX `inTyVar` tyT = error "circular constraints"
+  | otherwise         = (tyS, tyT) : unify (substTypes tyX tyT cs)  -- 前に追加
+--  | otherwise         = unify (substTypes tyX tyT cs) ++ [(tyS, tyT)]
+unify ((tyS, tyT@(TyId tyX)):cs) = unify ((tyT, tyS):cs)
+unify (((TyArr tyS1 tyS2),(TyArr tyT1 tyT2)):cs) = unify ((tyS1, tyT1):(tyS2,tyT2):cs)
+unify _ = error "unification fail"
+
+applySubst :: SubstType -> Ty -> Ty
+applySubst ss tyT = foldl (\tyT' (TyId tyX, tyS) -> substType tyX tyS tyT') tyT ss
+
+typeof' :: Term -> Ty
+typeof' term = applySubst sigma tyS
+  where
+    (tyS, constr) = doRecon term
+    sigma = unify constr
+
+-- \x:X. \y:Y. \z:Z. x
 expr = TmAbs "x" (TyId "X")
          (TmAbs "y" (TyId "Y")
             (TmAbs "z" (TyId "Z") (TmVar 2 3)))
 
+-- \x:X. \y:Y. \z:Z. (x z) (y z)
 exer22_2_3 = TmAbs "x" (TyId "X")
                (TmAbs "y" (TyId "Y")
                  (TmAbs "z" (TyId "Z")
