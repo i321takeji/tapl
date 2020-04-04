@@ -48,3 +48,16 @@ tests:
     - tapl
     - hspec
     - QuickCheck
+
+  tapl-tasty:
+    main:                Driver.hs
+    source-dirs:         test-tasty
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - tapl
+    - tasty
+    - tasty-hunit
+    - tasty-discover
